@@ -4,7 +4,7 @@
 
 <script>
   export default {
-    name: "_",
+    name: "notfound",
     layout: "notfound"
   }
 </script>

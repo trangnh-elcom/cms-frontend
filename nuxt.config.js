@@ -43,13 +43,16 @@ export default {
     '@nuxtjs/pwa',
     // Doc: https://github.com/nuxt-community/dotenv-module
     '@nuxtjs/dotenv',
-    '@nuxtjs/proxy'
+    '@nuxtjs/proxy',
+    '@nuxtjs/auth'
   ],
   /*
   ** Axios module configuration
   ** See https://axios.nuxtjs.org/options
   */
-  axios: {},
+  axios: {
+    proxy: true
+  },
   /*
   ** Build configuration
   */
@@ -65,6 +68,30 @@ export default {
       target: 'http://localhost:9889/api',
       pathRewrite: {
         '^/api': '/'
+      },
+      changeOrigin: true
+    }
+  },
+  auth:{
+    strategies: {
+      local: {
+        endpoints: {
+          login: {
+            url: '/api/auth/login',
+            method: 'post',
+            propertyName: 'token',
+          },
+          user: true,
+          tokenRequired: true,
+          logout: false
+        }
+      },
+      watchLoggedIn: true,
+      redirect: {
+        login: '/login',
+        logout: '/logout',
+        callback: '/login',
+        home: '/'
       }
     }
   }

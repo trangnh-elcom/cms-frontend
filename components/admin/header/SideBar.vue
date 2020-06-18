@@ -3,13 +3,13 @@
     <!-- Brand Logo -->
     <a class="brand-link" href="/">
       <img alt="AdminLTE Logo" class="brand-image img-circle elevation-3"
-           src="AdminLTE/AdminLTELogo.png" style="opacity: .8">
+           src="/admin/AdminLTE/AdminLTELogo.png" style="opacity: .8">
       <span class="brand-text font-weight-light">CMS Tin tức</span>
     </a>
 
     <!-- Sidebar -->
-    <div
-      class="sidebar os-host os-theme-light os-host-overflow os-host-overflow-y os-host-resize-disabled os-host-scrollbar-horizontal-hidden os-host-transition">
+    <div v-show="currentUser"
+         class="sidebar os-host os-theme-light os-host-overflow os-host-overflow-y os-host-resize-disabled os-host-scrollbar-horizontal-hidden os-host-transition">
       <div class="os-resize-observer-host">
         <div class="os-resize-observer observed" style="left: 0px; right: auto;"></div>
       </div>
@@ -17,7 +17,7 @@
         <div class="os-resize-observer observed"></div>
       </div>
       <div class="os-content-glue" style="margin: 0px -8px; width: 249px; height: 636px;"></div>
-      <div class="os-padding">
+      <div class="os-padding" v-if="loggedInUser.roles">
         <div class="os-viewport os-viewport-native-scrollbars-invisible"
              style="overflow-y: scroll; right: 0px; bottom: 0px;">
           <div class="os-content" style="padding: 0px 8px; height: 100%; width: 100%;">
@@ -25,11 +25,11 @@
             <div class="user-panel mt-3 pb-3 mb-3 d-flex">
               <div class="image">
                 <img alt="User Image" class="img-circle elevation-2"
-                     src="AdminLTE/user2-160x160.jpg">
+                     src="/admin/AdminLTE/user2-160x160.jpg">
               </div>
               <div class="info">
-                <a class="d-block" href="#"><span> username</span></a>
-                <a class="d-block" href="#"><span> role </span></a>
+                <a class="d-block" href="#"><span>{{loggedInUser.name}}</span></a>
+                <a class="d-block" href="#"><span>{{loggedInUser.roles.map(value => value.name)}} </span></a>
               </div>
             </div>
 
@@ -89,9 +89,19 @@
 </template>
 
 <script>
-    export default {
-        name: "SideBar"
+  import {mapGetters} from 'vuex'
+
+  export default {
+    name: "SideBar",
+    computed: {
+      ...mapGetters(['isAuthenticated', 'loggedInUser'])
+    },
+    data (){
+      return {
+        currentUser: localStorage.getItem("currentUser")
+      }
     }
+  }
 </script>
 
 <style scoped>

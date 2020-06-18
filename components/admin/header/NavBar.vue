@@ -34,16 +34,22 @@
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto">
       <li class="nav-item">
-        <a href="/logout">Đăng xuất</a>
+        <a @click="logout">Đăng xuất</a>
       </li>
     </ul>
   </nav>
 </template>
 
 <script>
-    export default {
-        name: "NavBar"
+  export default {
+    name: "NavBar",
+    methods: {
+      async logout() {
+        await this.$auth.logout();
+        localStorage.removeItem("currentUser")
+      },
     }
+  }
 </script>
 
 <style scoped>

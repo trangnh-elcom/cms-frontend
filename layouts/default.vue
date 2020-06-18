@@ -11,6 +11,10 @@
 <script>
   import TopHeader from "../components/header/TopHeader";
   import PageFooter from "../components/footer/PageFooter";
+  import {
+    ON_SHOW_ERROR_MESSAGE_EVENT_NAME,
+    ON_SHOW_SUCCESS_MESSAGE_EVENT_NAME
+  } from "../components/const/event_name";
   export default {
     components: {PageFooter, TopHeader},
     head() {
@@ -20,6 +24,10 @@
           {
             rel: "stylesheet",
             href: "style.css",
+          },
+          {
+            rel: "stylesheet",
+            href: "https://fonts.googleapis.com/icon?family=Material+Icons",
           }
         ],
         script: [
@@ -30,6 +38,25 @@
           {src: 'js/active.js', body: true, defer: 'true'}
         ]
       }
-    }
+    },
+    mounted() {
+      this.addNuxtEventListener()
+    },
+    methods: {
+      addNuxtEventListener() {
+        this.$nuxt.$on(ON_SHOW_SUCCESS_MESSAGE_EVENT_NAME, (message) => {
+          this.makeToast(message, 'success')
+        })
+        this.$nuxt.$on(ON_SHOW_ERROR_MESSAGE_EVENT_NAME, (message) => {
+          this.makeToast(message, 'danger')
+        })
+      },
+      makeToast(message, variant = null) {
+        this.$bvToast.toast(message, {
+          variant: variant,
+          solid: true
+        })
+      }
+    },
   }
 </script>

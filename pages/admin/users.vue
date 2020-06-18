@@ -1,5 +1,6 @@
 <template>
   <div>
+    {{$auth.user}}
     <div class="container">
       <div class="table-wrapper">
         <div class="table-title">
@@ -53,7 +54,7 @@
             </td>
             <td>
               <div id="editAnUser">
-                <a class="edit" data-toggle="modal" href="#editUserModal">
+                <a class="edit" @click="showEditModal(user)">
                   <i class="material-icons"
                      data-toggle="tooltip"
                      title="Chỉnh sửa">&#xE254;
@@ -61,7 +62,7 @@
                 </a>
               </div>
               <div id="removeAnUser">
-                <a class="delete" data-toggle="modal" href="#deleteUserModal">
+                <a class="delete" @click="showDeleteModal(user)">
                   <i class="material-icons"
                      data-toggle="tooltip"
                      title="Xóa">&#xE872;
@@ -83,88 +84,40 @@
     </div>
     <!-- Add Modal HTML -->
     <div class="modal fade" id="addUserModal">
-      <AddUserModal :user="newUser" :roles="roles"></AddUserModal>
+      <AddUserModal :user="newUser" :roles="roles" mode="add"></AddUserModal>
     </div>
     <!-- Edit Modal HTML -->
     <div class="modal fade" id="editUserModal">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <form id="formEditUserModal">
-            <div class="modal-header">
-              <h4 class="modal-title">Sửa thông tin</h4>
-              <button aria-hidden="true" class="close" data-dismiss="modal" type="button">&times;</button>
-            </div>
-            <div class="modal-body">
-              <div class="form-group">
-                <label for="editName">Họ tên</label>
-                <input class="form-control" id="editName" required type="text">
-              </div>
-              <div class="form-group">
-                <label for="editEmail">Email</label>
-                <input class="form-control" disabled id="editEmail" required type="email">
-              </div>
-              <div class="form-group">
-                <label for="editIsLocked">Trạng thái khóa</label>
-                <br>
-                <select id="editIsLocked">
-                  <option value="true">Khóa</option>
-                  <option value="false">Không khóa</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="editRole">Vai trò</label>
-                <br>
-                <select id="editRole">
-                  <option value="USER">Người dùng</option>
-                  <option value="EDITOR">Biên tập viên</option>
-                  <option value="ADMIN">Admin</option>
-                </select>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <input class="btn btn-default" data-dismiss="modal" type="button" value="Hủy">
-              <input id="btnUserUpdate" class="btn btn-info" type="submit" value="Lưu">
-            </div>
-          </form>
-        </div>
-      </div>
+      <AddUserModal :user="selectedUser" :roles="roles" mode="edit" :onOkEvent="onEditEventName"></AddUserModal>
     </div>
     <!-- Delete Modal HTML -->
     <div class="modal fade" id="deleteUserModal">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <form id="formDeleteUserModal">
-            <div class="modal-header">
-              <h4 class="modal-title">Xóa bản ghi</h4>
-              <button aria-hidden="true" class="close" data-dismiss="modal" type="button">&times;</button>
-            </div>
-            <div class="modal-body">
-              <p>Bạn có muốn xóa bản ghi không?</p>
-              <p id="mainContent" style="height: fit-content"></p>
-              <p class="text-warning"><small>Hành động này không thể khôi phục</small></p>
-            </div>
-            <div class="modal-footer">
-              <input class="btn btn-default" data-dismiss="modal" type="button" value="Cancel">
-              <input class="btn btn-danger" type="submit" value="Delete">
-            </div>
-          </form>
-        </div>
-      </div>
+      <DeleteModal :message="selectedUser.email" :onOkEvent="onDeleteEventName"></DeleteModal>
     </div>
   </div>
 </template>
 
 <script>
+  import {mapGetters} from 'vuex'
   import {RepositoryFactory} from "@/repository/RespositoryFactory";
+  import {EmployerRepositoryFactory} from "../../repository/EmployerRepoFactory";
   import AddUserModal from "../../components/admin/users/AddUserModal";
+  import DeleteModal from "../../components/admin/common/modal/DeleteModal";
+  import {
+    ON_SHOW_ERROR_MESSAGE_EVENT_NAME,
+    ON_SHOW_SUCCESS_MESSAGE_EVENT_NAME
+  } from "../../components/const/event_name";
 
-  const UserRepository = RepositoryFactory.get('user');
+  const UserRepository = RepositoryFactory.get('user')
+  const EUserRepository = EmployerRepositoryFactory.get('user');
   const RoleRepository = RepositoryFactory.get('role');
   export default {
     name: "users",
-    components: {AddUserModal},
+    components: {DeleteModal, AddUserModal},
     layout: "admin",
+    middleware: 'auth',
     mounted() {
+      this.addNuxtEventListener()
       this.initData()
     },
     data() {
@@ -180,10 +133,42 @@
           "Cập nhật"
         ],
         roles: [],
-        newUser: this.initUser()
+        newUser: this.initUser(),
+        selectedUser: this.initUser(),
+        onDeleteEventName: 'ON_DELETE_USER',
+        onEditEventName: 'ON_EDIT_USER'
       }
     },
     methods: {
+      addNuxtEventListener() {
+        this.$nuxt.$on(this.onDeleteEventName, () => {
+          this.deleteUser()
+        })
+        this.$nuxt.$on(this.onEditEventName, () => {
+          this.updateUser()
+        })
+      },
+      async updateUser() {
+        if (this.selectedUser) {
+          console.log(this.selectedUser.roles)
+          var payload = {}
+          Object.assign(payload, this.selectedUser);
+          payload.roles = this.selectedUser.roles.map(value => value.name)
+          console.log(payload)
+          const response = await EUserRepository.updateUserByEmail(this.selectedUser.email, payload)
+            .catch(reason => {
+                const errorMessage = reason.response.data.apierror.message
+                $nuxt.$emit(ON_SHOW_ERROR_MESSAGE_EVENT_NAME, errorMessage)
+              }
+            )
+          if (response.status >= 200 && response.status <= 299) {
+            // var index = this.users.indexOf(this.selectedUser);
+            // this.users.splice(index, 1)
+            this.hideModal('deleteUserModal')
+            $nuxt.$emit(ON_SHOW_SUCCESS_MESSAGE_EVENT_NAME, "Cập nhật thành công")
+          }
+        }
+      },
       async initData() {
         const usersResponse = await UserRepository.getUsersByPage(this.$route.query.page || 0);
         if (usersResponse.status >= 200 && usersResponse.status <= 299) {
@@ -196,22 +181,56 @@
         }
       },
       isActivePage(index) {
-        console.log(index, this.$route.query.page)
         if (this.$route.query.page) {
           return this.$route.query.page == (index - 1)
         }
         return 1 == index
       },
-      initUser(){
+      initUser() {
         return {
           name: undefined,
           isLocked: undefined,
-          roles: undefined,
+          roles: [],
           newPassword: undefined,
           email: undefined
         }
+      },
+      showModal(modalId) {
+        $(`#${modalId}`).modal('show')
+      },
+      hideModal(modalId) {
+        $(`#${modalId}`).modal('hide')
+      },
+      showEditModal(user) {
+        this.selectedUser = user
+        this.showModal('editUserModal')
+      },
+      showDeleteModal(user) {
+        this.selectedUser = user
+        this.showModal('deleteUserModal')
+      },
+      async deleteUser() {
+        if (this.selectedUser) {
+          console.log(this.selectedUser.email)
+          const response = await EUserRepository.deleteUserById(this.selectedUser.email)
+            .catch(reason => {
+                const errorMessage = reason.response.data.apierror.message
+                $nuxt.$emit(ON_SHOW_ERROR_MESSAGE_EVENT_NAME, errorMessage)
+              }
+            )
+          if (response.status >= 200 && response.status <= 299) {
+            var index = this.users.indexOf(this.selectedUser);
+            this.users.splice(index, 1)
+
+            this.hideModal('deleteUserModal')
+            $nuxt.$emit(ON_SHOW_SUCCESS_MESSAGE_EVENT_NAME, "Xóa thành công")
+          }
+        }
       }
-    }
+    },
+    computed: {
+      ...mapGetters(['isAuthenticated', 'loggedInUser'])
+    },
   }
 </script>
 

@@ -9,7 +9,7 @@ export default {
   getUserById(userId) {
     return userRepository.get(`${resource}/${userId}`);
   },
-  getUsersByPage(page){
+  getUsersByPage(page) {
     return userRepository.get(`${resource}?page=${page}`);
   }
 };
