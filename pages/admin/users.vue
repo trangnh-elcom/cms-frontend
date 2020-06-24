@@ -9,9 +9,9 @@
             </div>
             <div class="col-sm-6">
               <a @click="showAddModal" class="btn btn-success"><i
-                  class="material-icons">&#xE147;</i> <span>Thêm user</span></a>
+                class="material-icons">&#xE147;</i> <span>Thêm user</span></a>
               <a @click="showDeleteCheckedModal" class="btn btn-danger"><i
-                  class="material-icons">&#xE15C;</i> <span>Xóa</span></a>
+                class="material-icons">&#xE15C;</i> <span>Xóa</span></a>
             </div>
           </div>
         </div>
@@ -109,6 +109,7 @@
     ON_SHOW_ERROR_MESSAGE_EVENT_NAME,
     ON_SHOW_SUCCESS_MESSAGE_EVENT_NAME
   } from "../../components/const/event_name";
+  import {hideModalById, showModalById} from "../../assets/js/boostrap-modal";
 
   const UserRepository = RepositoryFactory.get('user');
   const EUserRepository = EmployerRepositoryFactory.get('user');
@@ -175,7 +176,7 @@
           if (response.status >= 200 && response.status <= 299) {
             // var index = this.users.indexOf(this.selectedUser);
             // this.users.splice(index, 1)
-            this.hideModal('editUserModal');
+            hideModalById('editUserModal');
             $nuxt.$emit(ON_SHOW_SUCCESS_MESSAGE_EVENT_NAME, "Cập nhật thành công")
           }
         }
@@ -206,27 +207,21 @@
           email: undefined
         }
       },
-      showModal(modalId) {
-        $(`#${modalId}`).modal('show')
-      },
-      hideModal(modalId) {
-        $(`#${modalId}`).modal('hide')
-      },
       showAddModal() {
         this.newUser = this.initUser();
-        this.showModal('addUserModal')
+        showModalById('addUserModal')
       },
       showEditModal(user) {
         this.newUser = user;
-        this.showModal('editUserModal')
+        showModalById('editUserModal')
       },
       showDeleteModal(user) {
         this.newUser = user;
-        this.showModal('deleteUserModal')
+        showModalById('deleteUserModal')
       },
       async deleteUser() {
         if (this.newUser) {
-          console.log(this.newUser.email);
+          const index = this.users.indexOf(this.newUser);
           const response = await EUserRepository.deleteUserById(this.newUser.email)
             .catch(reason => {
                 const errorMessage = reason.response.data.apierror.message;
@@ -234,10 +229,9 @@
               }
             );
           if (response.status >= 200 && response.status <= 299) {
-            var index = this.users.indexOf(this.newUser);
             this.users.splice(index, 1);
 
-            this.hideModal('deleteUserModal');
+            hideModalById('deleteUserModal');
             $nuxt.$emit(ON_SHOW_SUCCESS_MESSAGE_EVENT_NAME, "Xóa thành công")
           }
         }
@@ -245,10 +239,9 @@
       async addUser() {
         if (this.newUser) {
           console.log(this.newUser.roles);
-          var payload = {};
+          const payload = {};
           Object.assign(payload, this.newUser);
           payload.roles = this.newUser.roles.map(value => value.name);
-          console.log(payload);
           const response = await EUserRepository.addUserByAdmin(payload)
             .catch(reason => {
                 const errorMessage = reason.response.data.apierror.message;
@@ -257,14 +250,14 @@
             );
           if (response.status >= 200 && response.status <= 299) {
             this.users = [this.newUser, ...this.users];
-            this.hideModal('addUserModal');
+            hideModalById('addUserModal');
             $nuxt.$emit(ON_SHOW_SUCCESS_MESSAGE_EVENT_NAME, "Thêm thành công")
           }
           this.newUser = this.initUser()
         }
       },
       showDeleteCheckedModal() {
-        this.showModal('deleteCheckedUserModal');
+        showModalById('deleteCheckedUserModal');
       },
       deleteCheckedUsers() {
         for (var index = 0; index < this.checkboxes.length; index += 1) {
@@ -273,7 +266,7 @@
             this.deleteUser()
           }
         }
-        this.hideModal('deleteCheckedUserModal');
+        hideModalById('deleteCheckedUserModal');
       }
     },
     computed: {
@@ -293,7 +286,7 @@
         if (this.isCheckedAll) {
           this.checkboxes.fill(true)
         } else {
-          if (this.checkboxes.every(value => value === true)){
+          if (this.checkboxes.every(value => value === true)) {
             this.checkboxes.fill(false)
           }
         }

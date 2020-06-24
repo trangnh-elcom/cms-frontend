@@ -1,7 +1,7 @@
 <template>
   <div class="modal-dialog">
     <div class="modal-content">
-      <form id="formAddCategoryModal">
+      <form @submit.prevent="emitOkEvent" id="formAddCategoryModal">
         <div class="modal-header">
           <h4 class="modal-title">Thêm mới chuyên mục</h4>
           <button aria-hidden="true" class="close" data-dismiss="modal" type="button">&times;</button>
@@ -9,25 +9,17 @@
         <div class="modal-body">
           <div class="form-group">
             <label for="addName">Tên</label>
-            <input class="form-control" id="addName" required type="text">
+            <input class="form-control" id="addName" required type="text" v-model="category.name">
           </div>
           <div class="form-group">
-            <label for="addParent">Chuyên mục cha</label>
+            <label>Chuyên mục cha</label>
             <br>
-            <select id="addParent">
-              <option value="">#</option>
-<!--              <th:block th:each="cate1: ${categories}">-->
-<!--                <option th:text="${cate1.name}" th:value="${cate1.id}"></option>-->
-<!--              </th:block>-->
-            </select>
-          </div>
-          <client-only>
-            <v-select :options="['a', 'b', 'c']" label="label">
+            <v-select :options="categories" label="name" v-model="category.parentCategory">
               <template slot="option" slot-scope="option">
-                {{ option }}
+                {{ option.name }}
               </template>
             </v-select>
-          </client-only>
+          </div>
         </div>
         <div class="modal-footer">
           <input class="btn btn-default" data-dismiss="modal" type="button" value="Hủy">
@@ -41,14 +33,28 @@
 <script>
   export default {
     name: "CategoryModal",
-    components: {ModelSelect},
     props: {
       category: {
         type: Object
       },
       categories: {
-        type: Object
+        type: Array
+      },
+      onOkEvent: {
+        type: String
       }
+    },
+    head() {
+      return {
+        link: [
+          {rel: "stylesheet", href: "https://unpkg.com/vue-select@3.0.0/dist/vue-select.css"}
+        ]
+      }
+    },
+    methods: {
+      emitOkEvent() {
+        $nuxt.$emit(this.onOkEvent)
+      },
     }
   }
 </script>

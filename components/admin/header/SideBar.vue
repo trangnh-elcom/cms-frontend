@@ -47,7 +47,7 @@
                   </a>
                   <ul class="nav nav-treeview">
                     <li class="nav-item">
-                      <a class="nav-link" :class="{'active' :  $nuxt.$route.name === 'admin-users'}" href="users">
+                      <a class="nav-link" :class="{'active' :  $nuxt.$route.name === 'admin-users' || $nuxt.$route.name === 'admin'}" href="users">
                         <i class="far fa-circle nav-icon"></i>
                         <p>Quản lý user</p>
                       </a>

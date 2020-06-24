@@ -1,6 +1,6 @@
-import Repository from "./Repository";
+import Repository from "../Repository";
 
-const resource = "/employers";
+const resource = "/editors";
 export default {
   // getAllCategories() {
   //   return Repository.get(`${resource}/all`);

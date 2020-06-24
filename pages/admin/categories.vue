@@ -1,6 +1,5 @@
 <template>
   <div>
-    {{categories}}
     {{checkboxes}}
     <div class="container">
       <div class="table-wrapper">
@@ -11,9 +10,9 @@
             </div>
             <div class="col-sm-6">
               <a @click="showAddModal" class="btn btn-success"><i
-                  class="material-icons">&#xE147;</i> <span>Thêm chuyên mục</span></a>
+                class="material-icons">&#xE147;</i> <span>Thêm chuyên mục</span></a>
               <a @click="showDeleteCheckedModal" class="btn btn-danger"><i
-                  class="material-icons">&#xE15C;</i> <span>Xóa</span></a>
+                class="material-icons">&#xE15C;</i> <span>Xóa</span></a>
             </div>
           </div>
         </div>
@@ -77,15 +76,15 @@
     </div>
     <!-- Add Modal HTML -->
     <div class="modal fade" id="addCategoryModal">
-      <CategoryModal :onOkEvent="onAddEventName" :categories="roles" :category="newCategory" mode="add"></CategoryModal>
+      <CategoryModal :categories="allCategories" :category="newCategory" :onOkEvent="onAddEventName"></CategoryModal>
     </div>
     <!-- Edit Modal HTML -->
     <div class="modal fade" id="editCategoryModal">
-      <CategoryModal :onOkEvent="onEditEventName" :categories="roles" :user="newCategory" mode="edit"></CategoryModal>
+      <CategoryModal :categories="allCategories" :category="newCategory" :onOkEvent="onEditEventName"></CategoryModal>
     </div>
     <!-- Delete Modal HTML -->
     <div class="modal fade" id="deleteCategoryModal">
-      <DeleteModal :message="newCategory.email" :onOkEvent="onDeleteEventName"></DeleteModal>
+      <DeleteModal :message="newCategory.name" :onOkEvent="onDeleteEventName"></DeleteModal>
     </div>
     <div class="modal fade" id="deleteCheckedCategoryModal">
       <DeleteModal :onOkEvent="onDeleteCheckedEventName"></DeleteModal>
@@ -96,17 +95,17 @@
 <script>
   import {mapGetters} from 'vuex'
   import {RepositoryFactory} from "@/repository/RespositoryFactory";
-  import {EmployerRepositoryFactory} from "../../repository/EmployerRepoFactory";
   import DeleteModal from "../../components/admin/common/modal/DeleteModal";
   import {
     ON_SHOW_ERROR_MESSAGE_EVENT_NAME,
     ON_SHOW_SUCCESS_MESSAGE_EVENT_NAME
   } from "../../components/const/event_name";
   import CategoryModal from "../../components/admin/categories/CategoryModal";
+  import {EditorRepositoryFactory} from "../../repository/EditorRepoFactory";
+  import {hideModalById, showModalById} from "../../assets/js/boostrap-modal";
 
   const CategoryRepository = RepositoryFactory.get('category');
-  const EUserRepository = EmployerRepositoryFactory.get('user');
-  const RoleRepository = RepositoryFactory.get('role');
+  const EditorCategoryRepository = EditorRepositoryFactory.get("category");
   export default {
     name: "categories",
     layout: 'admin',
@@ -126,14 +125,14 @@
           "Chuyên mục cha",
           "Hành động"
         ],
-        categories: [],
         newCategory: this.initCategory(),
         selectedCategories: this.initCategory(),
         onDeleteEventName: 'ON_DELETE_CATEGORY',
         onEditEventName: 'ON_EDIT_CATEGORY',
         onAddEventName: 'ON_ADD_CATEGORY',
         onDeleteCheckedEventName: 'ON_DELETE_CHECKED_CATEGORIES',
-        checkboxes: []
+        checkboxes: [],
+        allCategories: []
       }
     },
     methods: {
@@ -153,23 +152,24 @@
       },
       async updateCategory() {
         if (this.newCategory) {
-          // TODO: Update this code
-          // var payload = {};
-          // Object.assign(payload, this.newCategory);
-          // payload.roles = this.newCategory.roles.map(value => value.name);
-          // console.log(payload);
-          // const response = await EUserRepository.updateUserByEmail(this.newCategory.email, payload)
-          //   .catch(reason => {
-          //       const errorMessage = reason.response.data.apierror.message;
-          //       $nuxt.$emit(ON_SHOW_ERROR_MESSAGE_EVENT_NAME, errorMessage)
-          //     }
-          //   );
-          // if (response.status >= 200 && response.status <= 299) {
-          //   // var index = this.users.indexOf(this.selectedUser);
-          //   // this.users.splice(index, 1)
-          //   this.hideModal('editCategoryModal');
-          //   $nuxt.$emit(ON_SHOW_SUCCESS_MESSAGE_EVENT_NAME, "Cập nhật thành công")
-          // }
+          var payload = {};
+          Object.assign(payload, this.newCategory);
+          payload.parentId = null
+          if (this.newCategory.parentCategory != null) {
+            payload.parentId = this.newCategory.parentCategory.id
+          }
+          const response = await EditorCategoryRepository.updateCategoryById(this.newCategory.id, payload)
+            .catch(reason => {
+                const errorMessage = reason.response.data.apierror.message;
+                $nuxt.$emit(ON_SHOW_ERROR_MESSAGE_EVENT_NAME, errorMessage)
+              }
+            );
+          if (response.status >= 200 && response.status <= 299) {
+            // var index = this.users.indexOf(this.selectedUser);
+            // this.users.splice(index, 1)
+            hideModalById('editCategoryModal')
+            $nuxt.$emit(ON_SHOW_SUCCESS_MESSAGE_EVENT_NAME, "Cập nhật thành công")
+          }
         }
       },
       async initData() {
@@ -178,9 +178,9 @@
           this.totalPage = categoriesResponse.data.totalPage;
           this.categories = categoriesResponse.data.content
         }
-        const rolesResponse = await RoleRepository.getRolesUnder();
-        if (rolesResponse.status >= 200 && rolesResponse.status <= 299) {
-          this.roles = rolesResponse.data
+        const allCategoriesResponse = await CategoryRepository.getAllCategories();
+        if (allCategoriesResponse.status >= 200 && allCategoriesResponse.status <= 299) {
+          this.allCategories = allCategoriesResponse.data
         }
       },
       isActivePage(index) {
@@ -192,80 +192,71 @@
       initCategory() {
         return {
           name: undefined,
-          isLocked: undefined,
-          roles: [],
-          newPassword: undefined,
-          email: undefined
+          parentId: undefined,
+          parentCategory: undefined
         }
-      },
-      showModal(modalId) {
-        $(`#${modalId}`).modal('show')
-      },
-      hideModal(modalId) {
-        $(`#${modalId}`).modal('hide')
       },
       showAddModal() {
         this.newCategory = this.initCategory();
-        this.showModal('addCategoryModal')
+        showModalById('addCategoryModal')
       },
-      showEditModal(user) {
-        this.newCategory = user;
-        this.showModal('editCategoryModal')
+      showEditModal(category) {
+        this.newCategory = category;
+        showModalById('editCategoryModal')
       },
-      showDeleteModal(user) {
-        this.newCategory = user;
-        this.showModal('deleteCategoryModal')
+      showDeleteModal(category) {
+        this.newCategory = category;
+        showModalById('deleteCategoryModal')
       },
       async deleteCategory() {
         if (this.newCategory) {
-          console.log(this.newCategory.email);
-          const response = await EUserRepository.deleteUserById(this.newCategory.email)
+          const category = this.newCategory
+          const response = await EditorCategoryRepository.deleteCategoryById(category.id)
             .catch(reason => {
                 const errorMessage = reason.response.data.apierror.message;
                 $nuxt.$emit(ON_SHOW_ERROR_MESSAGE_EVENT_NAME, errorMessage)
               }
             );
           if (response.status >= 200 && response.status <= 299) {
-            var index = this.categories.indexOf(this.newCategory);
+            const index = this.categories.indexOf(category);
             this.categories.splice(index, 1);
 
-            this.hideModal('deleteCategoryModal');
+            hideModalById('deleteCategoryModal')
             $nuxt.$emit(ON_SHOW_SUCCESS_MESSAGE_EVENT_NAME, "Xóa thành công")
           }
         }
       },
       async addCategory() {
         if (this.newCategory) {
-          console.log(this.newCategory.roles);
-          var payload = {};
-          Object.assign(payload, this.newCategory);
-          payload.roles = this.newCategory.roles.map(value => value.name);
-          console.log(payload);
-          const response = await EUserRepository.addUserByAdmin(payload)
+          this.newCategory.parentId = null
+          if (this.newCategory.parentCategory != null) {
+            this.newCategory.parentId = this.newCategory.parentCategory.id
+          }
+          const response = await EditorCategoryRepository.addCategory(this.newCategory)
             .catch(reason => {
                 const errorMessage = reason.response.data.apierror.message;
                 $nuxt.$emit(ON_SHOW_ERROR_MESSAGE_EVENT_NAME, errorMessage)
               }
             );
           if (response.status >= 200 && response.status <= 299) {
-            this.categories = [this.newCategory, ...this.categories];
-            this.hideModal('addCategoryModal');
+            this.categories = [response.data, ...this.categories];
+            hideModalById('addCategoryModal')
             $nuxt.$emit(ON_SHOW_SUCCESS_MESSAGE_EVENT_NAME, "Thêm thành công")
           }
           this.newCategory = this.initCategory()
         }
       },
       showDeleteCheckedModal() {
-        this.showModal('deleteCheckedCategoryModal');
+        showModalById('deleteCheckedCategoryModal')
       },
       deleteCheckedCategories() {
-        for (var index = 0; index < this.checkboxes.length; index += 1) {
+        for (let index = 0; index < this.checkboxes.length; index += 1) {
           if (this.checkboxes[index]) {
             this.newCategory = this.categories[index];
             this.deleteCategory()
           }
         }
-        this.hideModal('deleteCheckedCategoryModal');
+        hideModalById('deleteCheckedCategoryModal')
       }
     },
     computed: {
@@ -278,7 +269,7 @@
       this.$nuxt.$off(this.onDeleteCheckedEventName)
     },
     watch: {
-      users() {
+      categories() {
         this.checkboxes = new Array(this.categories.length)
       },
       isCheckedAll() {

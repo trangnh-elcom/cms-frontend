@@ -1,4 +1,4 @@
-import EmployerRepository from "./employerRepository";
+import EmployerRepository from "./employer/employerRepository";
 import EUserRepository from "./employer/EUserRepository";
 
 const repositories = {
