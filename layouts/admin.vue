@@ -100,19 +100,19 @@
     },
     methods: {
       addNuxtEventListener() {
-        // this.$nuxt.$on(ON_SHOW_SUCCESS_MESSAGE_EVENT_NAME, (message) => {
-        //   this.makeToast(message, 'success')
-        // })
-        // this.$nuxt.$on(ON_SHOW_ERROR_MESSAGE_EVENT_NAME, (message) => {
-        //   this.makeToast(message, 'danger')
-        // })
+        this.$nuxt.$on(ON_SHOW_SUCCESS_MESSAGE_EVENT_NAME, (message) => {
+          this.makeToast(message, 'success')
+        })
+        this.$nuxt.$on(ON_SHOW_ERROR_MESSAGE_EVENT_NAME, (message) => {
+          this.makeToast(message, 'danger')
+        })
       },
-      // makeToast(message, variant = null) {
-      //   this.$bvToast.toast(message, {
-      //     variant: variant,
-      //     solid: true
-      //   })
-      // }
+      makeToast(message, variant = null) {
+        this.$bvToast.toast(message, {
+          variant: variant,
+          solid: true
+        })
+      }
     },
   }
 </script>

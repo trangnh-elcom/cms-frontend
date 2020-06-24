@@ -13,20 +13,21 @@
                 </div>
                 <form @submit.prevent="login">
                   <div class="form-group">
-                    <input v-model="email" type="email" class="form-control" id="exampleInputEmail1"
-                           placeholder="Email or User Name">
+                    <input class="form-control" id="exampleInputEmail1" placeholder="Email or User Name" required
+                           type="email" v-model="email">
                   </div>
                   <div class="form-group">
-                    <input v-model="password" type="password" class="form-control" id="exampleInputPassword1"
-                           placeholder="Password">
+                    <input class="form-control" id="exampleInputPassword1" placeholder="Password" required
+                           type="password"
+                           v-model="password">
                   </div>
                   <div class="form-group">
                     <div class="custom-control custom-checkbox mr-sm-2">
-                      <input type="checkbox" class="custom-control-input" id="customControlAutosizing">
+                      <input class="custom-control-input" id="customControlAutosizing" type="checkbox">
                       <label class="custom-control-label" for="customControlAutosizing">Remember me</label>
                     </div>
                   </div>
-                  <button type="submit" class="btn vizew-btn w-100 mt-30">Login</button>
+                  <button class="btn vizew-btn w-100 mt-30" type="submit">Login</button>
                 </form>
               </div>
             </div>
@@ -75,20 +76,25 @@
       },
       async login() {
         try {
+          console.log("login");
           await this.$auth.loginWith('local', {
             data: {
               email: this.email,
               password: this.password
             }
           }).then(value => {
-            console.log("login success", value)
-            this.$auth.setUser(value.data.user)
-            localStorage.setItem("currentUser", value.data.user)
-          })
+            this.$auth.setUser(value.data.user);
+            if (process.browser) {
+              localStorage.setItem("currentUser", JSON.stringify(value.data.user))
+            }
+          });
           this.$router.push('/admin/users')
         } catch (e) {
-          console.log("Error", e)
-          $nuxt.$emit(ON_SHOW_ERROR_MESSAGE_EVENT_NAME, "Tài khoản hoặc mật khẩu không đúng")
+          if (e.response.data.apierror.message) {
+            $nuxt.$emit(ON_SHOW_ERROR_MESSAGE_EVENT_NAME, e.response.data.apierror.message)
+          } else {
+            $nuxt.$emit(ON_SHOW_ERROR_MESSAGE_EVENT_NAME, "Tài khoản hoặc mật khẩu không đúng")
+          }
         }
       }
     }

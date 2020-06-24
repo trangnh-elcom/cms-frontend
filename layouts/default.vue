@@ -58,5 +58,9 @@
         })
       }
     },
+    beforeDestroy() {
+      this.$nuxt.$off(ON_SHOW_SUCCESS_MESSAGE_EVENT_NAME);
+      this.$nuxt.$off(ON_SHOW_ERROR_MESSAGE_EVENT_NAME);
+    }
   }
 </script>

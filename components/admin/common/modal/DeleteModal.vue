@@ -25,7 +25,8 @@
     name: "DeleteModal",
     props: {
       message: {
-        type: String
+        type: String,
+        default: ""
       },
       onOkEvent: {
         type: String

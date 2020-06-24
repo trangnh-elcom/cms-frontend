@@ -11,9 +11,9 @@
     </div>
 
     <!-- ##### Header Area Start ##### -->
-    <no-ssr>
+    <client-only>
       <header class="header-area">
-        <!-- Top Header Area -->
+        <!-- Top Hefader Area -->
         <div class="top-header-area">
           <div class="container">
             <div class="row align-items-center">
@@ -151,7 +151,7 @@
           </div>
         </div>
       </header>
-    </no-ssr>
+    </client-only>
     <!-- ##### Header Area End ##### -->
   </div>
 </template>

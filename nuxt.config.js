@@ -18,12 +18,15 @@ export default {
   /*
   ** Global CSS
   */
-  css: [],
+  css: [
+    '~/assets/css/main.css'
+  ],
   /*
   ** Plugins to load before mounting the App
   */
   plugins: [
-    '~/plugins/bootstrap-vue.js'
+    '~/plugins/bootstrap-vue.js',
+    {src: '@/plugins/vue-select.js', mode: 'client'}
   ],
   /*
   ** Nuxt.js dev-modules
@@ -81,7 +84,7 @@ export default {
             method: 'post',
             propertyName: 'token',
           },
-          user: true,
+          user: false,
           tokenRequired: true,
           logout: false
         }

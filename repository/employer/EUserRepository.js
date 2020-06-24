@@ -11,5 +11,8 @@ export default {
   },
   updateUserByEmail(email, payload){
     return userRepository.put(`${resource}/${email}`, payload);
+  },
+  addUserByAdmin(payload){
+    return userRepository.post(`${resource}`, payload);
   }
 };

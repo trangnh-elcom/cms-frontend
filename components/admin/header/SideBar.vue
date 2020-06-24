@@ -8,8 +8,8 @@
     </a>
 
     <!-- Sidebar -->
-    <div v-show="currentUser"
-         class="sidebar os-host os-theme-light os-host-overflow os-host-overflow-y os-host-resize-disabled os-host-scrollbar-horizontal-hidden os-host-transition">
+    <div class="sidebar os-host os-theme-light os-host-overflow os-host-overflow-y os-host-resize-disabled os-host-scrollbar-horizontal-hidden os-host-transition"
+         v-show="currentUser">
       <div class="os-resize-observer-host">
         <div class="os-resize-observer observed" style="left: 0px; right: auto;"></div>
       </div>
@@ -17,7 +17,7 @@
         <div class="os-resize-observer observed"></div>
       </div>
       <div class="os-content-glue" style="margin: 0px -8px; width: 249px; height: 636px;"></div>
-      <div class="os-padding" v-if="loggedInUser.roles">
+      <div class="os-padding" v-if="currentUser">
         <div class="os-viewport os-viewport-native-scrollbars-invisible"
              style="overflow-y: scroll; right: 0px; bottom: 0px;">
           <div class="os-content" style="padding: 0px 8px; height: 100%; width: 100%;">
@@ -28,8 +28,8 @@
                      src="/admin/AdminLTE/user2-160x160.jpg">
               </div>
               <div class="info">
-                <a class="d-block" href="#"><span>{{loggedInUser.name}}</span></a>
-                <a class="d-block" href="#"><span>{{loggedInUser.roles.map(value => value.name)}} </span></a>
+                <a class="d-block" href="#"><span>{{currentUser.name}}</span></a>
+                <a class="d-block" href="#"><span>{{currentUser.roles.map(value => value.name)}} </span></a>
               </div>
             </div>
 
@@ -47,19 +47,19 @@
                   </a>
                   <ul class="nav nav-treeview">
                     <li class="nav-item">
-                      <a class="nav-link active" href="/users">
+                      <a class="nav-link" :class="{'active' :  $nuxt.$route.name === 'admin-users'}" href="users">
                         <i class="far fa-circle nav-icon"></i>
                         <p>Quản lý user</p>
                       </a>
                     </li>
                     <li class="nav-item">
-                      <a class="nav-link" href="/categories">
+                      <a class="nav-link" :class="{'active' :  $nuxt.$route.name === 'admin-categories'}" href="categories">
                         <i class="far fa-circle nav-icon"></i>
                         <p>Quản lý chuyên mục</p>
                       </a>
                     </li>
                     <li class="nav-item">
-                      <a class="nav-link" href="/posts">
+                      <a class="nav-link" :class="{'active' :  $nuxt.$route.name === 'admin-posts'}" href="posts">
                         <i class="far fa-circle nav-icon"></i>
                         <p>Quản lý bài viết</p>
                       </a>
@@ -96,9 +96,17 @@
     computed: {
       ...mapGetters(['isAuthenticated', 'loggedInUser'])
     },
-    data (){
+    data() {
       return {
-        currentUser: localStorage.getItem("currentUser")
+        currentUser: this.getCurrentUser()
+      }
+    },
+    methods: {
+      getCurrentUser() {
+        if (process.browser) {
+          return JSON.parse(localStorage.getItem("currentUser"))
+        }
+        return undefined
       }
     }
   }
