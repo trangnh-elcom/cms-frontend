@@ -17,7 +17,7 @@
     "@nuxtjs/dotenv": "^1.4.0",
     "@nuxtjs/proxy": "^2.0.0",
     "@nuxtjs/pwa": "^3.0.0-0",
-    "axios": "^0.19.2",
+    "axios": "^0.21.1",
     "bootstrap-vue": "^2.15.0",
     "global": "^4.4.0",
     "nuxt": "^2.13.0",
